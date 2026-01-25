@@ -1,0 +1,297 @@
+:root {
+  --bg: #0f1419;
+  --panel: #161c24;
+  --line: #2a333f;
+  --ink: #e6edf3;
+  --ink-soft: #8b98a9;
+  --accent: #6cc0ff;
+  --match: #3fb950;
+  --consume: #6cc0ff;
+  --fail: #f0664f;
+  --mono: 'SFMono-Regular', 'Consolas', 'Menlo', monospace;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Hiragino Sans', 'Noto Sans JP', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.6;
+}
+
+.wrap {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 44px 20px 80px;
+}
+
+.head h1 {
+  font-size: 28px;
+  letter-spacing: 0.04em;
+}
+
+.sub {
+  color: var(--ink-soft);
+  margin-top: 4px;
+}
+
+.inputs {
+  margin-top: 26px;
+}
+
+.lbl > span {
+  display: block;
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  color: var(--ink-soft);
+  margin-bottom: 6px;
+}
+
+.re-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0 14px;
+}
+
+.re-line:focus-within {
+  border-color: var(--accent);
+}
+
+.slash {
+  color: var(--ink-soft);
+  font-family: var(--mono);
+  font-size: 20px;
+}
+
+#re,
+#test {
+  width: 100%;
+  font-family: var(--mono);
+  font-size: 18px;
+  padding: 13px 0;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+}
+
+#test {
+  padding: 13px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+}
+
+#re:focus,
+#test:focus {
+  outline: none;
+}
+
+#test:focus {
+  border-color: var(--accent);
+}
+
+.re-error {
+  margin-top: 10px;
+  color: var(--fail);
+  font-size: 14px;
+}
+
+.diagram-wrap {
+  margin-top: 24px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px;
+  overflow-x: auto;
+}
+
+.diagram svg {
+  display: block;
+  min-width: 100%;
+}
+
+.railroad .rr-line {
+  fill: none;
+  stroke: #586675;
+  stroke-width: 2;
+}
+
+.railroad .rr-term {
+  fill: var(--accent);
+}
+
+.railroad .rr-node rect {
+  fill: #1f2730;
+  stroke: #3d4956;
+  stroke-width: 1.5;
+  transition:
+    fill 0.12s,
+    stroke 0.12s;
+}
+
+.railroad .rr-node text {
+  fill: var(--ink);
+  font-family: var(--mono);
+  font-size: 14px;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.railroad .rr-anchor rect {
+  fill: #2a2233;
+  stroke: #5b4a6e;
+}
+
+.railroad .rr-class rect {
+  fill: #1c2a26;
+  stroke: #3d6152;
+}
+
+.railroad .rr-group {
+  fill: none;
+  stroke: #3d4956;
+  stroke-width: 1.4;
+  stroke-dasharray: 5 4;
+}
+
+.railroad .rr-group-label,
+.railroad .rr-quant {
+  fill: var(--ink-soft);
+  font-size: 11px;
+  font-family: 'Hiragino Sans', sans-serif;
+}
+
+.railroad .rr-quant {
+  text-anchor: middle;
+}
+
+.railroad .rr-node.active rect {
+  fill: #2b3a4a;
+  stroke: var(--accent);
+}
+
+.railroad .rr-node.consumed rect {
+  fill: #1d3a28;
+  stroke: var(--match);
+}
+
+.railroad .rr-node.failed rect {
+  fill: #3a2320;
+  stroke: var(--fail);
+}
+
+.result {
+  margin-top: 24px;
+}
+
+.verdict {
+  font-size: 15px;
+  font-weight: 600;
+  min-height: 24px;
+}
+
+.verdict.ok {
+  color: var(--match);
+}
+
+.verdict.ng {
+  color: var(--fail);
+}
+
+.string-view {
+  margin-top: 12px;
+  font-family: var(--mono);
+  font-size: 18px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 14px 16px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  min-height: 52px;
+}
+
+.ch {
+  border-radius: 2px;
+}
+
+.ch.in-match {
+  background: rgba(63, 185, 80, 0.22);
+}
+
+.ch.at {
+  background: var(--accent);
+  color: #0f1419;
+}
+
+.captures {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cap-row {
+  display: flex;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.cap-no {
+  color: var(--ink-soft);
+  min-width: 84px;
+}
+
+.cap-val {
+  font-family: var(--mono);
+  color: var(--accent);
+}
+
+.stepper {
+  margin-top: 24px;
+}
+
+.step-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  font-size: 14px;
+  padding: 8px 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--ink);
+  transition:
+    border-color 0.12s,
+    background 0.12s;
+}
+
+.btn:hover {
+  border-color: var(--accent);
+}
+
+.step-status {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin-left: 4px;
+}
+
+.step-hint {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
