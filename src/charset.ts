@@ -24,21 +24,31 @@ export function isWordChar(ch: string | undefined): boolean {
   return ch !== undefined && WORD.test(ch);
 }
 
-export function matchesClass(node: CharClass, ch: string): boolean {
-  let hit = false;
+// 否定を外した「素の集合」に ch が含まれるか。
+function inSet(node: CharClass, ch: string): boolean {
   for (const item of node.items) {
-    if (ch >= item.from && ch <= item.to) {
-      hit = true;
-      break;
-    }
+    if (ch >= item.from && ch <= item.to) return true;
   }
-  if (!hit) {
-    for (const s of node.shorthand) {
-      if (matchesShorthand(s, ch)) {
-        hit = true;
-        break;
-      }
-    }
+  for (const s of node.shorthand) {
+    if (matchesShorthand(s, ch)) return true;
+  }
+  return false;
+}
+
+// 大文字↔小文字を入れ替える。変化しない・複数文字になる場合は元の文字を返す。
+function swapCase(ch: string): string {
+  const lower = ch.toLowerCase();
+  const other = lower === ch ? ch.toUpperCase() : lower;
+  return other.length === 1 ? other : ch;
+}
+
+// ignoreCase のときは大小を畳んで集合の所属を判定し、そのうえで否定を適用する。
+// (JSと同じく [^a-z] の否定は畳み込み後に効くので 'A' は除外される)
+export function matchesClass(node: CharClass, ch: string, ignoreCase = false): boolean {
+  let hit = inSet(node, ch);
+  if (!hit && ignoreCase) {
+    const other = swapCase(ch);
+    if (other !== ch) hit = inSet(node, other);
   }
   return node.negated ? !hit : hit;
 }
