@@ -104,7 +104,16 @@ function layout(node: Node): Layout {
 }
 
 function layoutSeq(items: Node[]): Layout {
-  if (items.length === 0) return box({ kind: 'literal', id: -1, char: '' });
+  if (items.length === 0) {
+    // 空の式・空グループは何も消費しない。箱を置かず一本の線で通り抜けを表す。
+    const w = 44;
+    return {
+      w,
+      h: BOX_H,
+      cy: BOX_H / 2,
+      draw: (x, y) => line(x, y + BOX_H / 2, x + w, y + BOX_H / 2),
+    };
+  }
   const parts = items.map(layout);
   const cy = Math.max(...parts.map((p) => p.cy));
   const belowMax = Math.max(...parts.map((p) => p.h - p.cy));
