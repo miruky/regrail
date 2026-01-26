@@ -3,9 +3,25 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="正規表現を鉄道図で可視化し、マッチ過程をステップ実行するデバッガ" />
+    <meta
+      name="description"
+      content="正規表現を鉄道図で可視化し、マッチ過程をステップ実行するビジュアルデバッガ"
+    />
+    <meta name="theme-color" content="#f4f2ec" />
     <link rel="icon" type="image/svg+xml" href="logo.svg" />
     <title>regrail | 正規表現を鉄道図で読む</title>
+    <script>
+      // 初回描画のちらつきを防ぐため、テーマを描画前に確定する。
+      try {
+        var t = localStorage.getItem('regrail:theme');
+        if (t !== 'light' && t !== 'dark') {
+          t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.dataset.theme = t;
+      } catch (e) {
+        /* localStorage 不可時はCSSの既定(ライト)に委ねる */
+      }
+    </script>
   </head>
   <body>
     <div id="app"></div>
