@@ -448,16 +448,20 @@ a {
   stroke-dasharray: 4 5;
 }
 
-.railroad .rr-group-label,
-.railroad .rr-quant {
+/* グループ名は構造のキャプション、回数は数量。役割を書体で分ける。 */
+.railroad .rr-group-label {
   fill: var(--ink-faint);
-  font-size: 11px;
+  font-size: 10.5px;
   font-family: var(--sans);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.1em;
 }
 
 .railroad .rr-quant {
+  fill: var(--ink-soft);
+  font-size: 11px;
+  font-family: var(--sans);
   text-anchor: middle;
+  font-variant-numeric: tabular-nums;
 }
 
 .railroad .rr-node.active rect {
