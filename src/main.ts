@@ -102,7 +102,7 @@ app.innerHTML = `
         <li class="legend-item"><span class="legend-swatch is-fail"></span>不一致(後戻り)</li>
         <li class="legend-item"><span class="legend-swatch is-match"></span>成功</li>
       </ul>
-      <p class="step-hint">「進む」で照合の試行・消費・不一致・成功を1ステップずつたどれます。図中のノードとテスト文字列の現在位置が同時に光ります。</p>
+      <p class="step-hint">「進む」で照合の試行・消費・不一致・成功を1ステップずつたどれます(左右の矢印キーでも操作可)。図中のノードとテスト文字列の現在位置が同時に光ります。</p>
     </section>
   </main>
 
@@ -314,6 +314,23 @@ prevBtn.addEventListener('click', () => {
 resetBtn.addEventListener('click', () => {
   stepIndex = -1;
   updateStep();
+});
+
+// 入力欄の外では矢印キーでステップを進める(無効なボタンのクリックは何もしない)。
+window.addEventListener('keydown', (ev) => {
+  if (ev.metaKey || ev.ctrlKey || ev.altKey) return;
+  const tag = (ev.target as HTMLElement | null)?.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+  if (ev.key === 'ArrowRight') {
+    ev.preventDefault();
+    nextBtn.click();
+  } else if (ev.key === 'ArrowLeft') {
+    ev.preventDefault();
+    prevBtn.click();
+  } else if (ev.key === 'Home') {
+    ev.preventDefault();
+    resetBtn.click();
+  }
 });
 
 /* ── サンプル ── */

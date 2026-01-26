@@ -448,16 +448,20 @@ a {
   stroke-dasharray: 4 5;
 }
 
-.railroad .rr-group-label,
-.railroad .rr-quant {
+/* グループ名は構造のキャプション、回数は数量。役割を書体で分ける。 */
+.railroad .rr-group-label {
   fill: var(--ink-faint);
-  font-size: 11px;
+  font-size: 10.5px;
   font-family: var(--sans);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.1em;
 }
 
 .railroad .rr-quant {
+  fill: var(--ink-soft);
+  font-size: 11px;
+  font-family: var(--sans);
   text-anchor: middle;
+  font-variant-numeric: tabular-nums;
 }
 
 .railroad .rr-node.active rect {
@@ -473,6 +477,31 @@ a {
 .railroad .rr-node.failed rect {
   fill: color-mix(in srgb, var(--c-fail) 16%, var(--surface));
   stroke: var(--c-fail);
+}
+
+/* ステップ進行で“今この箱を試している”ことを、一瞬のふくらみで示す。
+   箱と文字をまとめて中心から拡大する。 */
+.railroad .rr-node {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes rr-pop {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.09);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.railroad .rr-node.active,
+.railroad .rr-node.consumed,
+.railroad .rr-node.failed {
+  animation: rr-pop 0.32s var(--ease);
 }
 
 /* ── 照合結果 ── */
@@ -527,6 +556,17 @@ a {
   background: var(--accent);
   color: var(--paper);
   border-radius: 2px;
+  animation: at-ping 0.42s var(--ease);
+}
+
+/* 現在位置に移ったとき、外側へ広がって消える環で“ここ”を示す。 */
+@keyframes at-ping {
+  from {
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 70%, transparent);
+  }
+  to {
+    box-shadow: 0 0 0 7px color-mix(in srgb, var(--accent) 0%, transparent);
+  }
 }
 
 .captures {
