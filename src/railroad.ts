@@ -15,7 +15,9 @@ const V_GAP = 14;
 const FORK = 24;
 const ARC = 18;
 const GROUP_PADX = 14;
-const GROUP_TOP = 24;
+// グループのラベル帯。直下に繰り返しの戻り弧と回数ラベルが来ても
+// グループ名と重ならないだけの高さを確保する。
+const GROUP_TOP = 36;
 const GROUP_BOT = 12;
 const TERM_R = 7;
 
