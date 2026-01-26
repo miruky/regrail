@@ -24,11 +24,21 @@ export class RegexSyntaxError extends Error {
 }
 
 const SHORTHAND: Record<string, ShorthandClass> = {
-  d: 'd', D: 'D', w: 'w', W: 'W', s: 's', S: 'S',
+  d: 'd',
+  D: 'D',
+  w: 'w',
+  W: 'W',
+  s: 's',
+  S: 'S',
 };
 
 const ESCAPES: Record<string, string> = {
-  n: '\n', r: '\r', t: '\t', f: '\f', v: '\v', '0': '\0',
+  n: '\n',
+  r: '\r',
+  t: '\t',
+  f: '\f',
+  v: '\v',
+  '0': '\0',
 };
 
 export function parse(source: string): Pattern {
@@ -234,7 +244,11 @@ class Parser {
       const ch = this.readClassChar(shorthand);
       if (ch === null) continue; // 短縮クラスを取り込んだ
       // 範囲 a-z(- が末尾なら通常文字)
-      if (this.peek() === '-' && this.src[this.pos + 1] !== ']' && this.src[this.pos + 1] !== undefined) {
+      if (
+        this.peek() === '-' &&
+        this.src[this.pos + 1] !== ']' &&
+        this.src[this.pos + 1] !== undefined
+      ) {
         this.pos += 1; // -
         const to = this.readClassChar(shorthand);
         if (to === null) {
