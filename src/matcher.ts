@@ -34,12 +34,32 @@ export interface Step {
   consumed?: number; // consume のとき消費した文字数
 }
 
+export interface CaptureSpan {
+  index: number;
+  start: number;
+  end: number;
+}
+
 export interface MatchResult {
   matched: boolean;
   start: number;
   end: number;
   steps: Step[];
-  captures: Array<{ index: number; start: number; end: number } | null>;
+  captures: Array<CaptureSpan | null>;
+}
+
+// 1件の一致。開始・終了位置に加え、その一致を成立させた試行traceと捕捉を持つ。
+export interface Match {
+  start: number;
+  end: number;
+  steps: Step[];
+  captures: Array<CaptureSpan | null>;
+}
+
+export interface MatchAllResult {
+  matches: Match[];
+  // 一致がないとき、位置0からの試行traceを可視化用に返す。
+  firstSteps: Step[];
 }
 
 const STEP_LIMIT = 200000;
@@ -180,11 +200,10 @@ class Engine {
   }
 }
 
-// input の各開始位置で先頭からのマッチを試し、最初に見つかった一致を返す。
-// 一致しない場合は、開始位置0での試行のtraceを失敗の可視化用に返す。
-export function runMatch(pattern: Pattern, input: string, flags: Flags = NO_FLAGS): MatchResult {
-  let firstSteps: Step[] = [];
-  for (let start = 0; start <= input.length; start += 1) {
+// from 以降の各開始位置で先頭からのマッチを試し、最初に見つかった一致を返す。
+// 見つからなければ null。各一致は自分の開始位置からの試行traceを保持する。
+function findFrom(pattern: Pattern, input: string, flags: Flags, from: number): Match | null {
+  for (let start = from; start <= input.length; start += 1) {
     const engine = new Engine(input, pattern.groupCount, flags);
     let end = -1;
     const ok = engine.run(pattern.root, start, (p) => {
@@ -194,16 +213,43 @@ export function runMatch(pattern: Pattern, input: string, flags: Flags = NO_FLAG
     if (ok) {
       engine.record(pattern.root.id, end, 'match');
       return {
-        matched: true,
         start,
         end,
         steps: engine.steps,
         captures: engine.captures.map((c, i) => (c ? { index: i + 1, ...c } : null)),
       };
     }
-    if (start === 0) firstSteps = engine.steps;
   }
-  return { matched: false, start: -1, end: -1, steps: firstSteps, captures: [] };
+  return null;
+}
+
+// 位置0からの試行traceだけを取り出す(一致なしの可視化用)。
+function attemptSteps(pattern: Pattern, input: string, flags: Flags): Step[] {
+  const engine = new Engine(input, pattern.groupCount, flags);
+  engine.run(pattern.root, 0, () => true);
+  return engine.steps;
+}
+
+// input の各開始位置で先頭からのマッチを試し、最初に見つかった一致を返す。
+// 一致しない場合は、開始位置0での試行のtraceを失敗の可視化用に返す。
+export function runMatch(pattern: Pattern, input: string, flags: Flags = NO_FLAGS): MatchResult {
+  const m = findFrom(pattern, input, flags, 0);
+  if (m) return { matched: true, ...m };
+  return { matched: false, start: -1, end: -1, steps: attemptSteps(pattern, input, flags), captures: [] };
+}
+
+// 重なりのない全ての一致を、文字列の先頭から順に列挙する(g フラグ相当)。
+// 空一致のときは1文字進め、ネイティブのグローバル照合と同じ位置取りにする。
+export function runMatchAll(pattern: Pattern, input: string, flags: Flags = NO_FLAGS): MatchAllResult {
+  const matches: Match[] = [];
+  let pos = 0;
+  while (pos <= input.length) {
+    const m = findFrom(pattern, input, flags, pos);
+    if (!m) break;
+    matches.push(m);
+    pos = m.end > m.start ? m.end : m.end + 1;
+  }
+  return { matches, firstSteps: matches.length === 0 ? attemptSteps(pattern, input, flags) : [] };
 }
 
 export { matchesShorthand };
