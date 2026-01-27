@@ -24,4 +24,14 @@ describe('URL状態のエンコード・デコード', () => {
   it('空文字のキーは空文字として復元する', () => {
     expect(decodeState('re=&s=')).toEqual({ pattern: '', test: '' });
   });
+
+  it('フラグを含めて往復できる', () => {
+    const state = { pattern: 'abc', test: 'ABC', flags: 'im' };
+    expect(decodeState('#' + encodeState(state))).toEqual(state);
+  });
+
+  it('フラグが空なら載せない', () => {
+    expect(encodeState({ pattern: 'a', test: 'b', flags: '' })).toBe('re=a&s=b');
+    expect(decodeState('re=a&s=b')).toEqual({ pattern: 'a', test: 'b' });
+  });
 });

@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { parse } from './parser';
-import { runMatch } from './matcher';
+import { parseFlags, runMatch } from './matcher';
 
 // 自前マッチャの結果をネイティブRegExpと突き合わせ、対応サブセットでの
-// 一致開始/終了/捕捉が一致することを確認する。
-const CASES: Array<[string, string]> = [
+// 一致開始/終了/捕捉が一致することを確認する。3要素目はフラグ(i/m/s)。
+const CASES: Array<[string, string, string?]> = [
   ['abc', 'xxabcyy'],
   ['a|b', 'zzbzz'],
   ['a+', 'baaac'],
@@ -26,13 +26,28 @@ const CASES: Array<[string, string]> = [
   ['a.c', 'a\nc'],
   ['(foo|bar)+', 'foobarfoo'],
   ['x*', 'yyy'],
+  // i: 大小無視
+  ['abc', 'xxABCyy', 'i'],
+  ['[a-z]+', 'ABCdef', 'i'],
+  ['[^a-z]+', 'ABCdef', 'i'],
+  ['Hello', 'say hELLo!', 'i'],
+  // m: 複数行アンカー
+  ['^bar', 'foo\nbar\nbaz', 'm'],
+  ['baz$', 'foo\nbar\nbaz', 'm'],
+  ['^bar', 'foo\nbar', ''],
+  // s: 任意文字が改行も含む
+  ['a.c', 'a\nc', 's'],
+  ['a.+c', 'a\nx\nc', 's'],
+  // 併用
+  ['^end$', 'START\nEND', 'im'],
 ];
 
 describe('runMatch はネイティブRegExpと一致する', () => {
-  for (const [pattern, input] of CASES) {
-    it(`/${pattern}/ に対して ${JSON.stringify(input)}`, () => {
-      const native = new RegExp(pattern).exec(input);
-      const mine = runMatch(parse(pattern), input);
+  for (const [pattern, input, flags = ''] of CASES) {
+    const label = flags ? `/${pattern}/${flags}` : `/${pattern}/`;
+    it(`${label} に対して ${JSON.stringify(input)}`, () => {
+      const native = new RegExp(pattern, flags).exec(input);
+      const mine = runMatch(parse(pattern), input, parseFlags(flags));
       if (native === null) {
         expect(mine.matched).toBe(false);
         return;
