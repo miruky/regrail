@@ -1,7 +1,7 @@
 import './style.css';
 import { parse, RegexSyntaxError } from './parser';
 import { renderRailroad } from './railroad';
-import { runMatch, type MatchResult } from './matcher';
+import { parseFlags, runMatch, type MatchResult } from './matcher';
 import { EXAMPLES } from './examples';
 import { decodeState, encodeState } from './state';
 import { loadTheme, nextTheme, resolveTheme, saveTheme, THEME_LABEL, type Theme } from './theme';
@@ -24,6 +24,12 @@ if (!app) throw new Error('#app が見つからない');
 const initial = decodeState(location.hash);
 const startPattern = initial.pattern ?? DEFAULT_PATTERN;
 const startTest = initial.test ?? DEFAULT_TEST;
+const startFlags = sanitizeFlags(initial.flags ?? '');
+
+// i(大小無視)・m(複数行)・s(任意が改行も含む)だけを、その順序で1つずつ受け入れる。
+function sanitizeFlags(raw: string): string {
+  return ['i', 'm', 's'].filter((f) => raw.includes(f)).join('');
+}
 
 const exampleItems = EXAMPLES.map(
   (ex, i) =>
@@ -62,6 +68,9 @@ app.innerHTML = `
         <input id="re" type="text" spellcheck="false" autocomplete="off" autocapitalize="off"
           value="${escapeAttr(startPattern)}" aria-label="正規表現" />
         <span class="slash" aria-hidden="true">/</span>
+        <input id="flags" class="flags-input" type="text" spellcheck="false" autocomplete="off"
+          autocapitalize="off" maxlength="3" placeholder="ims" value="${escapeAttr(startFlags)}"
+          aria-label="フラグ i:大小を区別しない m:複数行 s:任意の文字が改行も含む" />
       </div>
       <p id="re-error" class="field-error" role="alert" hidden></p>
       <div class="examples">
@@ -112,6 +121,7 @@ app.innerHTML = `
 `;
 
 const reInput = app.querySelector<HTMLInputElement>('#re')!;
+const flagsInput = app.querySelector<HTMLInputElement>('#flags')!;
 const reError = app.querySelector<HTMLParagraphElement>('#re-error')!;
 const diagramEl = app.querySelector<HTMLDivElement>('#diagram')!;
 const testInput = app.querySelector<HTMLInputElement>('#test')!;
@@ -160,6 +170,7 @@ shareBtn.addEventListener('click', async () => {
   const url = `${location.origin}${location.pathname}#${encodeState({
     pattern: reInput.value,
     test: testInput.value,
+    flags: flagsInput.value,
   })}`;
   try {
     await navigator.clipboard.writeText(url);
@@ -188,18 +199,23 @@ const ACTION_LABEL: Record<string, string> = {
 };
 
 function syncHash(): void {
-  const hash = `#${encodeState({ pattern: reInput.value, test: testInput.value })}`;
+  const hash = `#${encodeState({
+    pattern: reInput.value,
+    test: testInput.value,
+    flags: flagsInput.value,
+  })}`;
   history.replaceState(null, '', hash);
 }
 
 function rebuild(): void {
   const source = reInput.value;
+  const flags = flagsInput.value;
   try {
     const pattern = parse(source);
     reError.hidden = true;
     diagramEl.innerHTML = renderRailroad(pattern).svg;
-    diagramEl.setAttribute('aria-label', `正規表現 /${source}/ の鉄道図`);
-    result = runMatch(pattern, testInput.value);
+    diagramEl.setAttribute('aria-label', `正規表現 /${source}/${flags} の鉄道図`);
+    result = runMatch(pattern, testInput.value, parseFlags(flags));
   } catch (error) {
     if (error instanceof RegexSyntaxError) {
       reError.textContent = `位置 ${error.index}: ${error.message}`;
@@ -208,6 +224,7 @@ function rebuild(): void {
     }
     reError.hidden = false;
     diagramEl.innerHTML = '';
+    diagramEl.setAttribute('aria-label', '正規表現にエラーがあり、図を描けません');
     result = null;
   }
   stepIndex = -1;
@@ -341,16 +358,24 @@ app.querySelectorAll<HTMLButtonElement>('.example-btn').forEach((btn) => {
     if (!ex) return;
     reInput.value = ex.pattern;
     testInput.value = ex.test;
+    flagsInput.value = '';
     rebuild();
   });
 });
 
 reInput.addEventListener('input', rebuild);
 testInput.addEventListener('input', rebuild);
+flagsInput.addEventListener('input', () => {
+  const cleaned = sanitizeFlags(flagsInput.value.toLowerCase());
+  if (cleaned !== flagsInput.value) flagsInput.value = cleaned;
+  rebuild();
+});
 window.addEventListener('hashchange', () => {
   const next = decodeState(location.hash);
   if (next.pattern !== undefined && next.pattern !== reInput.value) reInput.value = next.pattern;
   if (next.test !== undefined && next.test !== testInput.value) testInput.value = next.test;
+  const nextFlags = sanitizeFlags(next.flags ?? '');
+  if (next.flags !== undefined && nextFlags !== flagsInput.value) flagsInput.value = nextFlags;
   rebuild();
 });
 

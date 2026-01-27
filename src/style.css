@@ -290,6 +290,32 @@ a {
   color: var(--ink-faint);
 }
 
+/* フラグは正規表現リテラルと同じく末尾のスラッシュの後ろに置く。 */
+.flags-input {
+  flex: none;
+  width: 3.4ch;
+  font-family: var(--mono);
+  font-size: 17px;
+  color: var(--accent);
+  background: transparent;
+  border: none;
+  padding: 4px 0;
+}
+
+.flags-input:focus {
+  outline: none;
+}
+
+.flags-input::placeholder {
+  color: var(--ink-faint);
+  opacity: 0.5;
+}
+
+#re {
+  flex: 1;
+  min-width: 0;
+}
+
 #re,
 .test-input {
   width: 100%;

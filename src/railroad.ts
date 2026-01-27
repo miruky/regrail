@@ -263,8 +263,9 @@ export function renderRailroad(pattern: Pattern): Diagram {
   body += line(endX, cy, endX + 28, cy);
   body += `<circle class="rr-term" cx="${endX + 28 + TERM_R}" cy="${cy}" r="${TERM_R}"/>`;
 
+  // 図の説明は外側のコンテナ(role=img)が持つので、内側のSVGは支援技術から隠す。
   const svg =
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${Math.ceil(width)} ${Math.ceil(height)}" ` +
-    `class="railroad" role="img" aria-label="正規表現の鉄道図">${body}</svg>`;
+    `class="railroad" aria-hidden="true" focusable="false">${body}</svg>`;
   return { svg, width, height };
 }
