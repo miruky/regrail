@@ -4,6 +4,27 @@ import { isWordChar, matchesClass, matchesShorthand } from './charset';
 // ASTを再帰下降のバックトラッキングで実行し、過程をtraceに記録する。
 // 継続(cont)渡しで「残りが一致するか」を表現し、量指定子の貪欲/非貪欲を扱う。
 
+// 照合フラグ。i:大小無視 / m:複数行アンカー / s:任意文字が改行も含む。
+export interface Flags {
+  ignoreCase: boolean;
+  multiline: boolean;
+  dotAll: boolean;
+}
+
+const NO_FLAGS: Flags = { ignoreCase: false, multiline: false, dotAll: false };
+
+export function parseFlags(flags: string): Flags {
+  return {
+    ignoreCase: flags.includes('i'),
+    multiline: flags.includes('m'),
+    dotAll: flags.includes('s'),
+  };
+}
+
+function charEq(a: string, b: string, ignoreCase: boolean): boolean {
+  return ignoreCase ? a.toLowerCase() === b.toLowerCase() : a === b;
+}
+
 export type StepAction = 'enter' | 'consume' | 'fail' | 'match';
 
 export interface Step {
@@ -30,6 +51,7 @@ class Engine {
   constructor(
     readonly input: string,
     groupCount: number,
+    readonly flags: Flags,
   ) {
     this.captures = Array.from({ length: groupCount }, () => null);
   }
@@ -46,7 +68,8 @@ class Engine {
     switch (node.kind) {
       case 'literal': {
         this.record(node.id, pos, 'enter');
-        if (this.input[pos] === node.char) {
+        const ch = this.input[pos];
+        if (ch !== undefined && charEq(ch, node.char, this.flags.ignoreCase)) {
           this.record(node.id, pos, 'consume', 1);
           if (cont(pos + 1)) return true;
         }
@@ -56,7 +79,7 @@ class Engine {
       case 'any': {
         this.record(node.id, pos, 'enter');
         const ch = this.input[pos];
-        if (ch !== undefined && ch !== '\n') {
+        if (ch !== undefined && (this.flags.dotAll || ch !== '\n')) {
           this.record(node.id, pos, 'consume', 1);
           if (cont(pos + 1)) return true;
         }
@@ -66,7 +89,7 @@ class Engine {
       case 'class': {
         this.record(node.id, pos, 'enter');
         const ch = this.input[pos];
-        if (ch !== undefined && matchesClass(node, ch)) {
+        if (ch !== undefined && matchesClass(node, ch, this.flags.ignoreCase)) {
           this.record(node.id, pos, 'consume', 1);
           if (cont(pos + 1)) return true;
         }
@@ -144,9 +167,9 @@ class Engine {
     const here = this.input[pos];
     switch (at) {
       case 'start':
-        return pos === 0;
+        return pos === 0 || (this.flags.multiline && before === '\n');
       case 'end':
-        return pos === this.input.length;
+        return pos === this.input.length || (this.flags.multiline && here === '\n');
       case 'wordBoundary':
         return isWordChar(before) !== isWordChar(here);
       case 'nonWordBoundary':
@@ -159,10 +182,10 @@ class Engine {
 
 // input の各開始位置で先頭からのマッチを試し、最初に見つかった一致を返す。
 // 一致しない場合は、開始位置0での試行のtraceを失敗の可視化用に返す。
-export function runMatch(pattern: Pattern, input: string): MatchResult {
+export function runMatch(pattern: Pattern, input: string, flags: Flags = NO_FLAGS): MatchResult {
   let firstSteps: Step[] = [];
   for (let start = 0; start <= input.length; start += 1) {
-    const engine = new Engine(input, pattern.groupCount);
+    const engine = new Engine(input, pattern.groupCount, flags);
     let end = -1;
     const ok = engine.run(pattern.root, start, (p) => {
       end = p;
