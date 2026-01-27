@@ -224,6 +224,7 @@ function rebuild(): void {
     }
     reError.hidden = false;
     diagramEl.innerHTML = '';
+    diagramEl.setAttribute('aria-label', '正規表現にエラーがあり、図を描けません');
     result = null;
   }
   stepIndex = -1;
