@@ -4,12 +4,14 @@
 export interface AppState {
   pattern: string;
   test: string;
+  flags?: string;
 }
 
 export function encodeState(state: AppState): string {
   const params = new URLSearchParams();
   params.set('re', state.pattern);
   params.set('s', state.test);
+  if (state.flags) params.set('f', state.flags);
   return params.toString();
 }
 
@@ -21,5 +23,6 @@ export function decodeState(hash: string): Partial<AppState> {
   const out: Partial<AppState> = {};
   if (params.has('re')) out.pattern = params.get('re') ?? '';
   if (params.has('s')) out.test = params.get('s') ?? '';
+  if (params.has('f')) out.flags = params.get('f') ?? '';
   return out;
 }
