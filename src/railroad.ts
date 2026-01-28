@@ -46,6 +46,8 @@ function terminalLabel(node: Node): { text: string; cls: string } {
       return { text: node.label, cls: 'rr-class' };
     case 'anchor':
       return { text: anchorText(node.at), cls: 'rr-anchor' };
+    case 'backref':
+      return { text: `\\${node.index}`, cls: 'rr-backref' };
     default:
       return { text: '', cls: '' };
   }
@@ -93,6 +95,7 @@ function layout(node: Node): Layout {
     case 'any':
     case 'class':
     case 'anchor':
+    case 'backref':
       return box(node);
     case 'seq':
       return layoutSeq(node.items);
