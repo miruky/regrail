@@ -1,7 +1,16 @@
 // 正規表現の抽象構文木。各ノードに一意のidを振り、鉄道図の描画と
 // マッチtrace のハイライトを同じidで結びつける。
 
-export type Node = Literal | AnyChar | CharClass | Anchor | Group | Alternation | Sequence | Repeat;
+export type Node =
+  | Literal
+  | AnyChar
+  | CharClass
+  | Anchor
+  | Backref
+  | Group
+  | Alternation
+  | Sequence
+  | Repeat;
 
 export interface Base {
   id: number;
@@ -36,6 +45,11 @@ export type ShorthandClass = 'd' | 'D' | 'w' | 'W' | 's' | 'S';
 export interface Anchor extends Base {
   kind: 'anchor';
   at: 'start' | 'end' | 'wordBoundary' | 'nonWordBoundary';
+}
+
+export interface Backref extends Base {
+  kind: 'backref';
+  index: number; // 参照するグループ番号(1始まり)
 }
 
 export interface Group extends Base {
