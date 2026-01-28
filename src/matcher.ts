@@ -124,6 +124,22 @@ class Engine {
         this.record(node.id, pos, 'fail');
         return false;
       }
+      case 'backref': {
+        this.record(node.id, pos, 'enter');
+        const cap = this.captures[node.index - 1];
+        // 未捕捉の後方参照は空文字に一致する(JSの挙動)。
+        const want = cap ? this.input.slice(cap.start, cap.end) : '';
+        const got = this.input.slice(pos, pos + want.length);
+        const same = this.flags.ignoreCase
+          ? got.toLowerCase() === want.toLowerCase()
+          : got === want;
+        if (same) {
+          if (want.length > 0) this.record(node.id, pos, 'consume', want.length);
+          if (cont(pos + want.length)) return true;
+        }
+        this.record(node.id, pos, 'fail');
+        return false;
+      }
       case 'seq':
         return this.runSeq(node.items, 0, pos, cont);
       case 'alt': {
@@ -235,12 +251,22 @@ function attemptSteps(pattern: Pattern, input: string, flags: Flags): Step[] {
 export function runMatch(pattern: Pattern, input: string, flags: Flags = NO_FLAGS): MatchResult {
   const m = findFrom(pattern, input, flags, 0);
   if (m) return { matched: true, ...m };
-  return { matched: false, start: -1, end: -1, steps: attemptSteps(pattern, input, flags), captures: [] };
+  return {
+    matched: false,
+    start: -1,
+    end: -1,
+    steps: attemptSteps(pattern, input, flags),
+    captures: [],
+  };
 }
 
 // 重なりのない全ての一致を、文字列の先頭から順に列挙する(g フラグ相当)。
 // 空一致のときは1文字進め、ネイティブのグローバル照合と同じ位置取りにする。
-export function runMatchAll(pattern: Pattern, input: string, flags: Flags = NO_FLAGS): MatchAllResult {
+export function runMatchAll(
+  pattern: Pattern,
+  input: string,
+  flags: Flags = NO_FLAGS,
+): MatchAllResult {
   const matches: Match[] = [];
   let pos = 0;
   while (pos <= input.length) {
