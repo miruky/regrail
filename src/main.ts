@@ -5,9 +5,11 @@ import { parseFlags, runMatchAll, type MatchAllResult, type Step } from './match
 import { EXAMPLES } from './examples';
 import { decodeState, encodeState } from './state';
 import { loadTheme, nextTheme, resolveTheme, saveTheme, THEME_LABEL, type Theme } from './theme';
+import { toStandaloneSvg, type DiagramColors } from './export';
 import {
   BRAND_MARK,
   CHECK_ICON,
+  DOWNLOAD_ICON,
   LINK_ICON,
   STEP_NEXT_ICON,
   STEP_PREV_ICON,
@@ -80,6 +82,10 @@ app.innerHTML = `
     </section>
 
     <section class="diagram-section" aria-label="鉄道図">
+      <div class="diagram-head">
+        <span class="field-label">鉄道図</span>
+        <button id="export-svg" class="ghost-btn ghost-btn--sm" type="button">${DOWNLOAD_ICON}<span>SVGで保存</span></button>
+      </div>
       <div class="diagram-frame">
         <div id="diagram" class="diagram" tabindex="0" role="img" aria-label="正規表現の鉄道図"></div>
       </div>
@@ -150,6 +156,7 @@ const prevBtn = app.querySelector<HTMLButtonElement>('#step-prev')!;
 const nextBtn = app.querySelector<HTMLButtonElement>('#step-next')!;
 const themeBtn = app.querySelector<HTMLButtonElement>('#theme')!;
 const shareBtn = app.querySelector<HTMLButtonElement>('#share')!;
+const exportBtn = app.querySelector<HTMLButtonElement>('#export-svg')!;
 
 /* ── テーマ ── */
 
@@ -199,6 +206,37 @@ shareBtn.addEventListener('click', async () => {
     shareBtn.innerHTML = `${LINK_ICON}<span>リンクをコピー</span>`;
     shareBtn.classList.remove('is-done');
   }, 1800);
+});
+
+/* ── 図のSVG書き出し ── */
+
+function diagramColors(): DiagramColors {
+  const cs = getComputedStyle(rootEl);
+  const v = (name: string): string => cs.getPropertyValue(name).trim();
+  return {
+    surface: v('--surface'),
+    ink: v('--ink'),
+    inkSoft: v('--ink-soft'),
+    inkFaint: v('--ink-faint'),
+    ruleStrong: v('--rule-strong'),
+    accent: v('--accent'),
+    accentStrong: v('--accent-strong'),
+    rail: v('--rail'),
+    consume: v('--c-consume'),
+  };
+}
+
+exportBtn.addEventListener('click', () => {
+  const svg = diagramEl.querySelector('svg');
+  if (!svg) return;
+  const label = `正規表現 /${reInput.value}/${flagsInput.value} の鉄道図`;
+  const out = toStandaloneSvg(svg.outerHTML, label, diagramColors());
+  const url = URL.createObjectURL(new Blob([out], { type: 'image/svg+xml' }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'regrail-diagram.svg';
+  a.click();
+  URL.revokeObjectURL(url);
 });
 
 /* ── 照合と描画 ── */
@@ -254,6 +292,7 @@ function rebuild(): void {
   syncHash();
   renderResult();
   updateDiagramFades();
+  exportBtn.disabled = run === null;
 }
 
 // 図が横にはみ出してスクロールできる方向だけ、端をフェードのマスクで示す。
