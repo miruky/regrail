@@ -410,6 +410,39 @@ a {
   margin-top: 40px;
 }
 
+/* スクロールできる方向の端をフェードのマスクで示すための枠。 */
+.diagram-frame {
+  position: relative;
+}
+
+.diagram-frame::before,
+.diagram-frame::after {
+  content: '';
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  width: 48px;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.22s var(--ease);
+}
+
+.diagram-frame::before {
+  left: 0;
+  background: linear-gradient(to right, var(--surface), transparent);
+}
+
+.diagram-frame::after {
+  right: 0;
+  background: linear-gradient(to left, var(--surface), transparent);
+}
+
+.diagram-frame.can-left::before,
+.diagram-frame.can-right::after {
+  opacity: 1;
+}
+
 .diagram {
   background: var(--surface);
   border-top: 1px solid var(--rule);
@@ -424,10 +457,11 @@ a {
   outline-offset: -2px;
 }
 
+/* 実寸で描画し、図がコンテナより狭ければ中央寄せ、広ければ横スクロール。 */
 .railroad {
   display: block;
-  min-width: 100%;
-  height: auto;
+  margin: 0 auto;
+  max-width: none;
 }
 
 .railroad .rr-line {
@@ -576,6 +610,67 @@ a {
 .ch.in-match {
   background: color-mix(in srgb, var(--c-match) 22%, transparent);
   box-shadow: 0 1px 0 color-mix(in srgb, var(--c-match) 50%, transparent);
+}
+
+/* 複数一致のとき、いま検証中の一致だけアクセントで縁取って区別する。 */
+.ch.in-active {
+  background: color-mix(in srgb, var(--accent) 24%, transparent);
+  box-shadow: 0 2px 0 var(--accent);
+}
+
+/* ── 一致ナビ(複数一致のとき) ── */
+
+.match-nav {
+  margin-top: 22px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.match-nav-label {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.match-nav-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.match-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  color: var(--ink-soft);
+  transition:
+    color 0.16s var(--ease),
+    background-color 0.16s var(--ease);
+}
+
+.match-nav-btn:hover:not(:disabled) {
+  color: var(--accent-strong);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.match-nav-btn:disabled {
+  color: var(--ink-faint);
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.match-count {
+  min-width: 4.5ch;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
 }
 
 .ch.at {
