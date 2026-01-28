@@ -29,6 +29,10 @@ export const LINK_ICON =
 export const CHECK_ICON =
   '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.5L19 7"/></svg>';
 
+// 図のSVG書き出し用。トレイへ降りる矢印。
+export const DOWNLOAD_ICON =
+  '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5v10.5"/><path d="M8 10.5 12 14.5 16 10.5"/><path d="M5 19.5h14"/></svg>';
+
 // ステップ操作のアイコン(先頭へ戻す・一歩戻る・一歩進む)。
 export const STEP_RESET_ICON =
   '<svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5v14"/><path d="M19 6.5 10 12l9 5.5z" fill="currentColor" stroke="none"/></svg>';

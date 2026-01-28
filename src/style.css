@@ -410,6 +410,35 @@ a {
   margin-top: 40px;
 }
 
+.diagram-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.diagram-head .field-label {
+  margin-bottom: 0;
+}
+
+.ghost-btn--sm {
+  padding: 5px 11px;
+  font-size: 12px;
+}
+
+.ghost-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  color: var(--ink-faint);
+  border-color: var(--rule);
+}
+
+.ghost-btn:disabled:hover {
+  color: var(--ink-faint);
+  border-color: var(--rule);
+}
+
 /* スクロールできる方向の端をフェードのマスクで示すための枠。 */
 .diagram-frame {
   position: relative;
@@ -499,6 +528,18 @@ a {
 .railroad .rr-class rect {
   fill: color-mix(in srgb, var(--c-consume) 10%, var(--surface));
   stroke: color-mix(in srgb, var(--c-consume) 38%, var(--rule-strong));
+}
+
+/* 後方参照は捕捉グループを指し示す参照。アクセントの破線枠で関連を示す。 */
+.railroad .rr-backref rect {
+  fill: color-mix(in srgb, var(--accent) 8%, var(--surface));
+  stroke: color-mix(in srgb, var(--accent) 45%, var(--rule-strong));
+  stroke-dasharray: 5 3;
+}
+
+/* ラベルは \1 の表記。色だけアクセントにして参照であることを示す。 */
+.railroad .rr-backref text {
+  fill: var(--accent-strong);
 }
 
 .railroad .rr-group {
