@@ -11,8 +11,8 @@ import type {
 
 // 標準的なJS正規表現のサブセットを再帰下降で解析する。
 // 対応: 文字・. ・文字クラス[]・短縮クラス\d\w\s等・アンカー^$\b\B・
-// グループ(...)(?:...)・選択|・量指定子* + ? {m,n}(貪欲/非貪欲)・エスケープ。
-// 非対応: 後方参照、先読み・後読み、名前付きグループ。
+// グループ(...)(?:...)・選択|・量指定子* + ? {m,n}(貪欲/非貪欲)・後方参照\1-\9・エスケープ。
+// 非対応: 先読み・後読み、名前付きグループ。
 
 export class RegexSyntaxError extends Error {
   constructor(
@@ -49,6 +49,8 @@ class Parser {
   private pos = 0;
   private nextId = 0;
   private groupCount = 0;
+  // 後方参照は前方参照(グループより先に書く)も許すため、解析後にまとめて検証する。
+  private backrefs: Array<{ index: number; pos: number }> = [];
 
   constructor(private readonly src: string) {}
 
@@ -57,6 +59,14 @@ class Parser {
     if (this.pos < this.src.length) {
       // ここに来るのは余分な ) など
       throw new RegexSyntaxError(`予期しない文字 '${this.peek()}'`, this.pos);
+    }
+    for (const ref of this.backrefs) {
+      if (ref.index > this.groupCount) {
+        throw new RegexSyntaxError(
+          `後方参照 \\${ref.index} に対応するグループがありません`,
+          ref.pos,
+        );
+      }
     }
     return { root, groupCount: this.groupCount };
   }
@@ -210,12 +220,19 @@ class Parser {
   }
 
   private parseEscape(): Node {
+    const slash = this.pos;
     this.pos += 1; // バックスラッシュ
     const c = this.peek();
     if (c === '') throw new RegexSyntaxError('エスケープが途中で終わっています', this.pos);
     this.pos += 1;
     if (c === 'b') return { kind: 'anchor', id: this.id(), at: 'wordBoundary' };
     if (c === 'B') return { kind: 'anchor', id: this.id(), at: 'nonWordBoundary' };
+    // \1〜\9 は後方参照。\0 はヌル文字としてエスケープ表に残す。
+    if (c >= '1' && c <= '9') {
+      const index = Number(c);
+      this.backrefs.push({ index, pos: slash });
+      return { kind: 'backref', id: this.id(), index };
+    }
     if (SHORTHAND[c]) {
       return {
         kind: 'class',
