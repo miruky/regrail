@@ -264,8 +264,11 @@ export function renderRailroad(pattern: Pattern): Diagram {
   body += `<circle class="rr-term" cx="${endX + 28 + TERM_R}" cy="${cy}" r="${TERM_R}"/>`;
 
   // 図の説明は外側のコンテナ(role=img)が持つので、内側のSVGは支援技術から隠す。
+  // 実寸の width/height を持たせ、狭い画面では縮小せず横スクロールで読めるようにする。
+  const w = Math.ceil(width);
+  const h = Math.ceil(height);
   const svg =
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${Math.ceil(width)} ${Math.ceil(height)}" ` +
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" ` +
     `class="railroad" aria-hidden="true" focusable="false">${body}</svg>`;
   return { svg, width, height };
 }
