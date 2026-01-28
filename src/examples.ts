@@ -46,4 +46,10 @@ export const EXAMPLES: readonly Example[] = [
     test: 'she sells shells',
     note: '\\b で語の先頭からだけ照合する',
   },
+  {
+    name: '重複語',
+    pattern: '(\\w+) \\1',
+    test: 'the the cat sat',
+    note: '後方参照 \\1 で直前の語の繰り返しを捕まえる',
+  },
 ];
